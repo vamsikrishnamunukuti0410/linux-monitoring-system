@@ -1,48 +1,46 @@
 name: CI/CD Pipeline
 
 on:
-push:
-branches:
-- main
+  push:
+    branches:
+      - main
 
 jobs:
-build-and-deploy:
-runs-on: ubuntu-latest
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
-```
-steps:
-  - name: Checkout code
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  - name: Login to Docker Hub
-    run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      - name: Login to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-  - name: Build Docker Image
-    run: docker build -f docker/Dockerfile -t vicky0410/monitoring-app:latest .
+      - name: Build Docker Image
+        run: docker build -f docker/Dockerfile -t vicky0410/monitoring-app:latest .
 
-  - name: Push Docker Image
-    run: docker push vicky0410/monitoring-app:latest
+      - name: Push Docker Image
+        run: docker push vicky0410/monitoring-app:latest
 
-  - name: Install OpenShift CLI
-    run: |
-      curl -LO https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz
-      tar -xvf oc.tar.gz
-      sudo mv oc /usr/local/bin/
+      - name: Install OpenShift CLI
+        run: |
+          curl -LO https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz
+          tar -xvf oc.tar.gz
+          sudo mv oc /usr/local/bin/
 
-  - name: Login to OpenShift
-    run: oc login --token=${{ secrets.OPENSHIFT_TOKEN }} --server=${{ secrets.OPENSHIFT_SERVER }}
+      - name: Login to OpenShift
+        run: oc login --token=${{ secrets.OPENSHIFT_TOKEN }} --server=${{ secrets.OPENSHIFT_SERVER }}
 
-  - name: Set Project
-    run: oc project ${{ secrets.OPENSHIFT_NAMESPACE }}
+      - name: Set Project
+        run: oc project ${{ secrets.OPENSHIFT_NAMESPACE }}
 
-  - name: Update Deployment Image
-    run: |
-      oc set image deployment/monitoring-agent \
-      monitoring-agent=vicky0410/monitoring-app:latest
+      - name: Update Deployment Image
+        run: |
+          oc set image deployment/monitoring-agent \
+          monitoring-agent=vicky0410/monitoring-app:latest
 
-  - name: Restart Deployment
-    run: oc rollout restart deployment/monitoring-agent
+      - name: Restart Deployment
+        run: oc rollout restart deployment/monitoring-agent
 
-  - name: Verify Rollout
-    run: oc rollout status deployment/monitoring-agent
-```
+      - name: Verify Rollout
+        run: oc rollout status deployment/monitoring-agent
