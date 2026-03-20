@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: monitoring-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: monitoring-agent
+  template:
+    metadata:
+      labels:
+        app: monitoring-agent
+    spec:
+      volumes:
+        - name: monitoring-storage
+          emptyDir: {}
+      containers:
+        - name: monitoring-agent
+          image: vicky0410/linux-monitoring-agent:latest
+          ports:
+            - containerPort: 9100
+          volumeMounts:
+            - name: monitoring-storage
+              mountPath: /app/logs
+              subPath: logs
+            - name: monitoring-storage
+              mountPath: /app/reports
+              subPath: reports

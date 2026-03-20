@@ -268,14 +268,20 @@ render_dashboard() {
 # --------------------------------------------------
 # Main Monitoring Loop
 # --------------------------------------------------
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 
+    trap "echo -e '\n${GREEN}Dashboard stopped.${RST}'; exit 0" SIGINT SIGTERM
 
-trap "echo -e '\n${GREEN}Dashboard stopped.${RST}'; exit 0"
-SIGINT SIGTERM
+    MODE="${1:-}"
 
+    if [[ "$MODE" == "--watch" ]]; then
+        while true
+        do
+            render_dashboard
+            sleep "${REFRESH_INTERVAL:-5}"
+        done
+    else
+        render_dashboard
+    fi
 
-while true
-do
-    render_dashboard
-    sleep "${REFRESH_INTERVAL:-5}"
-done
+fi
